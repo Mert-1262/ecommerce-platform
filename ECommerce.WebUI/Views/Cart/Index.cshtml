@@ -1,0 +1,157 @@
+@model ECommerce.WebUI.Models.CartModel
+
+@{
+    var items = Model.CartItems ?? new List<ECommerce.WebUI.Models.CartItemModel>();
+    decimal grandTotal = items.Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
+}
+
+<div class="container mt-5">
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Sepetim</h2>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-dark">
+            Alışverişe Devam
+        </a>
+    </div>
+
+    @if (!items.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+                Sepetiniz boş.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ürün</th>
+                            <th class="text-center">Adet</th>
+                            <th class="text-end">Birim Fiyat</th>
+                            <th class="text-end">Toplam</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in items)
+                        {
+                            var unitPrice = item.Product?.Price ?? 0;
+                            var lineTotal = unitPrice * item.Quantity;
+
+                            <tr>
+                                <td>@(item.Product?.Name ?? "Ürün")</td>
+                                <td class="text-center">
+                                    <div class="d-inline-flex align-items-center justify-content-center gap-1">
+                                        @if (item.Quantity <= 1)
+                                        {
+                                            <form asp-action="Remove" method="post" class="m-0">
+                                                <input type="hidden" name="cartItemId" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary px-2" aria-label="Azalt">−</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="UpdateQuantity" method="post" class="m-0">
+                                                <input type="hidden" name="cartItemId" value="@item.Id" />
+                                                <input type="hidden" name="quantity" value="@(item.Quantity - 1)" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary px-2" aria-label="Azalt">−</button>
+                                            </form>
+                                        }
+                                        <span class="px-2 fw-semibold" style="min-width: 2rem;">@item.Quantity</span>
+                                        <form asp-action="UpdateQuantity" method="post" class="m-0">
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <input type="hidden" name="quantity" value="@(item.Quantity + 1)" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-secondary px-2"
+                                                    aria-label="Artır"
+                                                    @(item.Quantity >= (item.Product?.Stock ?? item.Quantity) ? "disabled" : null)>
+                                                +
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                                <td class="text-end">₺@unitPrice.ToString("N2")</td>
+                                <td class="text-end">₺@lineTotal.ToString("N2")</td>
+                                <td class="text-end">
+                                    <form asp-action="Remove" method="post" class="d-inline">
+                                        <input type="hidden" name="cartItemId" value="@item.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            Sil
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="3" class="text-end">Genel Toplam</th>
+                            <th class="text-end">₺@grandTotal.ToString("N2")</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Sipariş Özeti</h5>
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="text-muted">Genel Toplam</span>
+                    <strong class="fs-5">₺@grandTotal.ToString("N2")</strong>
+                </div>
+
+                <form asp-action="Checkout" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="paymentMethod" class="form-label">
+                                Ödeme Yöntemi
+                                <small class="text-muted">(Adapter Pattern)</small>
+                            </label>
+                            <select id="paymentMethod" name="paymentMethod" class="form-select" required>
+                                <option value="CreditCard">Kredi Kartı</option>
+                                <option value="Havale">Havale</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cargoCompany" class="form-label">
+                                Kargo Firması
+                                <small class="text-muted">(Factory Pattern)</small>
+                            </label>
+                            <select id="cargoCompany" name="cargoCompany" class="form-select" required>
+                                <option value="Aras">Aras Kargo</option>
+                                <option value="Yurtici">Yurtiçi Kargo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-dark btn-lg">
+                            Siparişi Tamamla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+</div>

@@ -1,0 +1,85 @@
+﻿@model ECommerce.WebUI.Models.RegisterRequest
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row justify-content-center mt-5">
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h2 class="text-center mb-4">
+
+                    Kayıt Ol
+
+                </h2>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">
+
+                        @ViewBag.Error
+
+                    </div>
+                }
+
+                <form method="post">
+
+                    <div class="mb-3">
+
+                        <label>Ad Soyad</label>
+
+                        <input asp-for="FullName"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Email</label>
+
+                        <input asp-for="Email"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Şifre</label>
+
+                        <input asp-for="Password"
+                               type="password"
+                               class="form-control" />
+
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-dark w-100">
+
+                        Kayıt Ol
+
+                    </button>
+
+                </form>
+
+                <div class="text-center mt-3">
+
+                    <a href="/Auth/Login">
+
+                        Zaten hesabım var
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,120 @@
+@model List<ECommerce.WebUI.Models.CampaignModel>
+
+<div class="container mt-5">
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success" role="alert">@TempData["Message"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Admin — Kampanyalar</h2>
+            <p class="text-muted mb-0 small">Aktif indirim kampanyalarını yönetin</p>
+        </div>
+        <a asp-controller="AdminProducts" asp-action="Index" class="btn btn-outline-dark">
+            Ürünlere Dön
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <strong>Yeni Kampanya</strong>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Ad</label>
+                    <input type="text" name="Name" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">İndirim Oranı (%)</label>
+                    <input type="number" name="DiscountRate" class="form-control" min="1" max="100" step="0.01" required />
+                </div>
+                <div class="col-md-2">
+                    <input type="hidden" name="IsActive" value="false" />
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="IsActive" value="true" class="form-check-input" id="campaign-is-active" />
+                        <label class="form-check-label" for="campaign-is-active">
+                            Aktif
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark w-100">
+                        Oluştur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Kampanya</th>
+                        <th>İndirim</th>
+                        <th>Durum</th>
+                        <th class="text-end" style="min-width: 220px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || !Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                Henüz kampanya yok.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var campaign in Model)
+                        {
+                            <tr>
+                                <td class="text-muted">@campaign.Id</td>
+                                <td class="fw-semibold">@campaign.Name</td>
+                                <td>%@campaign.DiscountRate.ToString("N2")</td>
+                                <td>
+                                    @if (campaign.IsActive)
+                                    {
+                                        <span class="badge bg-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Pasif</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="Toggle" method="post" class="d-inline">
+                                        <input type="hidden" name="campaignId" value="@campaign.Id" />
+                                        <input type="hidden" name="isActive" value="@(!campaign.IsActive)" />
+                                        <button type="submit" class="btn btn-sm btn-outline-dark me-1">
+                                            @(campaign.IsActive ? "Pasif Yap" : "Aktif Yap")
+                                        </button>
+                                    </form>
+                                    <form asp-action="Delete" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bu kampanyayı silmek istediğinize emin misiniz?');">
+                                        <input type="hidden" name="campaignId" value="@campaign.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Sil
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

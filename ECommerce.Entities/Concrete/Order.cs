@@ -10,5 +10,6 @@ namespace ECommerce.Entities.Concrete
         public string OrderStatus { get; set; }
         public DateTime OrderDate { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
+        public CargoTrack CargoTrack { get; set; }
     }
 }

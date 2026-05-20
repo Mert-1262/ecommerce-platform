@@ -1,0 +1,237 @@
+@model List<ECommerce.WebUI.Models.ProductModel>
+
+<div class="container mt-5">
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success" role="alert">@TempData["Message"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Admin — Ürünler</h2>
+            <p class="text-muted mb-0 small">Ürün ekle, düzenle, sil ve stok yönet</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#createProductModal">
+                Yeni Ürün
+            </button>
+            <a asp-controller="AdminOrders" asp-action="Index" class="btn btn-outline-dark">
+                Siparişler
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Ürün</th>
+                        <th>Kategori</th>
+                        <th class="text-end">Fiyat</th>
+                        <th class="text-center">Stok</th>
+                        <th class="text-end" style="min-width: 200px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || !Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                Ürün bulunamadı.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var product in Model)
+                        {
+                            var categoryName = product.CategoryId == 1 ? "Elektronik" : product.CategoryId == 2 ? "Giyim" : product.CategoryId.ToString();
+                            <tr>
+                                <td class="text-muted">@product.Id</td>
+                                <td>
+                                    <div class="fw-semibold">@product.Name</div>
+                                    <small class="text-muted d-block text-truncate" style="max-width: 220px;">
+                                        @product.Description
+                                    </small>
+                                    @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                                    {
+                                        <small class="text-muted">@product.ImageUrl</small>
+                                    }
+                                </td>
+                                <td>@categoryName</td>
+                                <td class="text-end">₺@product.Price.ToString("N2")</td>
+                                <td>
+                                    <div class="d-flex justify-content-center align-items-center gap-1">
+                                        <form asp-action="UpdateStock" method="post" class="m-0">
+                                            <input type="hidden" name="productId" value="@product.Id" />
+                                            <input type="hidden" name="stock" value="@(product.Stock - 1)" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-secondary px-2"
+                                                    @(product.Stock <= 0 ? "disabled" : null)>
+                                                −
+                                            </button>
+                                        </form>
+                                        <span class="px-2 fw-semibold" style="min-width: 2rem;">@product.Stock</span>
+                                        <form asp-action="UpdateStock" method="post" class="m-0">
+                                            <input type="hidden" name="productId" value="@product.Id" />
+                                            <input type="hidden" name="stock" value="@(product.Stock + 1)" />
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary px-2">
+                                                +
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-dark me-1 btn-edit-product"
+                                            data-id="@product.Id"
+                                            data-name="@product.Name"
+                                            data-description="@product.Description"
+                                            data-price="@product.Price"
+                                            data-stock="@product.Stock"
+                                            data-imageurl="@product.ImageUrl"
+                                            data-categoryid="@product.CategoryId">
+                                        Düzenle
+                                    </button>
+                                    <form asp-action="Delete" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bu ürünü silmek istediğinize emin misiniz?');">
+                                        <input type="hidden" name="productId" value="@product.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Sil
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Yeni Ürün -->
+<div class="modal fade" id="createProductModal" tabindex="-1" aria-labelledby="createProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createProductModalLabel">Yeni Ürün</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Ad</label>
+                        <input type="text" name="Name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea name="Description" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Fiyat</label>
+                            <input type="number" name="Price" class="form-control" step="0.01" min="0" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Stok</label>
+                            <input type="number" name="Stock" class="form-control" min="0" value="0" required />
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-2">
+                        <label class="form-label">Görsel URL</label>
+                        <input type="text" name="ImageUrl" class="form-control" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Kategori</label>
+                        <select name="CategoryId" class="form-select" required>
+                            <option value="1">Elektronik</option>
+                            <option value="2">Giyim</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-dark">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Ürün Düzenle -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" name="Id" id="edit-id" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProductModalLabel">Ürün Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Ad</label>
+                        <input type="text" name="Name" id="edit-name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea name="Description" id="edit-description" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Fiyat</label>
+                            <input type="number" name="Price" id="edit-price" class="form-control" step="0.01" min="0" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Stok</label>
+                            <input type="number" name="Stock" id="edit-stock" class="form-control" min="0" required />
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-2">
+                        <label class="form-label">Görsel URL</label>
+                        <input type="text" name="ImageUrl" id="edit-imageurl" class="form-control" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Kategori</label>
+                        <select name="CategoryId" id="edit-categoryid" class="form-select" required>
+                            <option value="1">Elektronik</option>
+                            <option value="2">Giyim</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-dark">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.btn-edit-product').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.getElementById('edit-id').value = btn.dataset.id;
+                document.getElementById('edit-name').value = btn.dataset.name;
+                document.getElementById('edit-description').value = btn.dataset.description;
+                document.getElementById('edit-price').value = btn.dataset.price;
+                document.getElementById('edit-stock').value = btn.dataset.stock;
+                document.getElementById('edit-imageurl').value = btn.dataset.imageurl || '';
+                document.getElementById('edit-categoryid').value = btn.dataset.categoryid;
+
+                new bootstrap.Modal(document.getElementById('editProductModal')).show();
+            });
+        });
+    </script>
+}

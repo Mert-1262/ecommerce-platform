@@ -1,0 +1,127 @@
+@model List<ECommerce.WebUI.Models.OrderModel>
+
+<div class="container mt-5">
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Siparişlerim</h2>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-dark">
+            Ürünlere Dön
+        </a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+                Henüz siparişiniz yok.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="accordion" id="ordersAccordion">
+            @for (var i = 0; i < Model.Count; i++)
+            {
+                var order = Model[i];
+                var headingId = $"orderHeading{i}";
+                var collapseId = $"orderCollapse{i}";
+                var items = order.OrderItems ?? new List<ECommerce.WebUI.Models.OrderItemModel>();
+                var orderStatusBadge = order.OrderStatus switch
+                {
+                    "Hazırlanıyor" => "bg-warning text-dark",
+                    "Kargoda" => "bg-primary",
+                    "Teslim Edildi" => "bg-success",
+                    _ => "bg-secondary"
+                };
+
+                <div class="accordion-item shadow-sm mb-2">
+                    <h2 class="accordion-header" id="@headingId">
+                        <button class="accordion-button @(i == 0 ? "" : "collapsed")"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#@collapseId"
+                                aria-expanded="@(i == 0 ? "true" : "false")"
+                                aria-controls="@collapseId">
+                            <span class="me-3">
+                                <strong>Sipariş #@order.Id</strong>
+                            </span>
+                            <span class="me-3 text-muted">
+                                @order.OrderDate.ToString("dd.MM.yyyy HH:mm")
+                            </span>
+                            <span class="badge @orderStatusBadge me-3">@order.OrderStatus</span>
+                            <span class="ms-auto fw-bold">₺@order.TotalPrice.ToString("N2")</span>
+                        </button>
+                    </h2>
+                    <div id="@collapseId"
+                         class="accordion-collapse collapse @(i == 0 ? "show" : "")"
+                         aria-labelledby="@headingId"
+                         data-bs-parent="#ordersAccordion">
+                        <div class="accordion-body">
+                            @if (order.CargoTrack != null)
+                            {
+                                var cargo = order.CargoTrack;
+                                var statusBadge = cargo.Status switch
+                                {
+                                    "Hazırlanıyor" => "bg-warning text-dark",
+                                    "Kargoda" => "bg-primary",
+                                    "Teslim Edildi" => "bg-success",
+                                    _ => "bg-secondary"
+                                };
+
+                                <div class="border-bottom bg-light px-3 py-3">
+                                    <div class="row g-2 align-items-center small">
+                                        <div class="col-md-4">
+                                            <span class="text-muted">Kargo Firması</span>
+                                            <div class="fw-semibold">@cargo.CargoCompany</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="text-muted">Takip Numarası</span>
+                                            <div class="fw-semibold font-monospace">@cargo.TrackingNumber</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="text-muted">Kargo Durumu</span>
+                                            <div>
+                                                <span class="badge @statusBadge">@cargo.Status</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ürün</th>
+                                        <th class="text-center">Adet</th>
+                                        <th class="text-end">Birim Fiyat</th>
+                                        <th class="text-end">Satır Toplam</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in items)
+                                    {
+                                        var lineTotal = item.UnitPrice * item.Quantity;
+                                        <tr>
+                                            <td>@(item.Product?.Name ?? "Ürün")</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">₺@item.UnitPrice.ToString("N2")</td>
+                                            <td class="text-end">₺@lineTotal.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>

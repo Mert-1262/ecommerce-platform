@@ -22,6 +22,29 @@ namespace ECommerce.DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ECommerce.Entities.Concrete.Campaign", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("DiscountRate")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Campaigns");
+                });
+
             modelBuilder.Entity("ECommerce.Entities.Concrete.CargoTrack", b =>
                 {
                     b.Property<int>("Id")
@@ -47,7 +70,8 @@ namespace ECommerce.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("CargoTracks");
                 });
@@ -238,8 +262,8 @@ namespace ECommerce.DataAccess.Migrations
             modelBuilder.Entity("ECommerce.Entities.Concrete.CargoTrack", b =>
                 {
                     b.HasOne("ECommerce.Entities.Concrete.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
+                        .WithOne("CargoTrack")
+                        .HasForeignKey("ECommerce.Entities.Concrete.CargoTrack", "OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -329,6 +353,9 @@ namespace ECommerce.DataAccess.Migrations
 
             modelBuilder.Entity("ECommerce.Entities.Concrete.Order", b =>
                 {
+                    b.Navigation("CargoTrack")
+                        .IsRequired();
+
                     b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618

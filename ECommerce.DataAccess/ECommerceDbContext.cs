@@ -20,10 +20,19 @@ namespace ECommerce.DataAccess.Contexts
 
         public DbSet<CartItem> CartItems { get; set; }
 
+        public DbSet<Campaign> Campaigns { get; set; }
+
         public DbSet<Order> Orders { get; set; }
 
         public DbSet<OrderItem> OrderItems { get; set; }
 
         public DbSet<CargoTrack> CargoTracks { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Campaign>()
+                .Property(x => x.DiscountRate)
+                .HasColumnType("decimal(5,2)");
+        }
     }
 }
