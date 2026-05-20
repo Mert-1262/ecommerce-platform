@@ -69,7 +69,17 @@ Ctrl + F5
 
 ile proje çalıştırılabilir.
 
+
 ## 📝 Not
 
 Kampanya yönetim modülü CRUD işlemleriyle birlikte geliştirilmiştir.
 Süre kısıtı sebebiyle kampanya aktif/pasif geçiş sistemi tamamen tamamlanamamış olup mevcut çalışan haliyle projeye dahil edilmiştir.
+
+
+## 👤 Demo Admin Giriş Bilgileri
+ 
+```bash
+Email: mertiyibicer@gmail.com
+Password: Mert1262
+
+
